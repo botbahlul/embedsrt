@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 import time
 
 
-VERSION = "0.0.3"
+VERSION = "0.0.4"
 
 
 class Language:
@@ -1038,10 +1038,10 @@ class MediaSubtitleEmbedder:
 
         if not os.path.isfile(media_filepath):
             if self.error_messages_callback:
-                self.error_messages_callback(f"The given file does not exist: {media_filepath}")
+                self.error_messages_callback(f"The given file does not exist: '{media_filepath}'")
             else:
-                print(f"The given file does not exist: {media_filepath}")
-                raise Exception(f"Invalid file: {media_filepath}")
+                print(f"The given file does not exist: '{media_filepath}'")
+                raise Exception(f"Invalid file: '{media_filepath}'")
 
         if not self.ffprobe_check():
             if self.error_messages_callback:
@@ -1061,7 +1061,7 @@ class MediaSubtitleEmbedder:
             existing_languages = self.get_existing_subtitle_language(media_filepath)
             if self.language in existing_languages:
                 # THIS 'print' THINGS WILL MAKE progresbar screwed up!
-                #msg = (f"'{self.language}' subtitle stream already existed in {media_filepath}")
+                #msg = (f"'{self.language}' subtitle stream already existed in '{media_filepath}'")
                 #if self.error_messages_callback:
                 #    self.error_messages_callback(msg)
                 #else:
@@ -1199,10 +1199,10 @@ def embed_subtitle_into_media(media_filepath, media_type, subtitle_path, languag
 
     if not os.path.isfile(media_filepath):
         if error_messages_callback:
-           error_messages_callback(f"The given file does not exist: {media_filepath}")
+           error_messages_callback(f"The given file does not exist: '{media_filepath}'")
         else:
-            print(f"The given file does not exist: {media_filepath}")
-            raise Exception(f"Invalid file: {media_filepath}")
+            print(f"The given file does not exist: '{media_filepath}'")
+            raise Exception(f"Invalid file: '{media_filepath}'")
 
     if not ffprobe_check():
         if error_messages_callback:
@@ -1230,7 +1230,7 @@ def embed_subtitle_into_media(media_filepath, media_type, subtitle_path, languag
 
         existing_languages = get_existing_subtitle_language(media_filepath)
         if language_code in existing_languages:
-            #print(f"'{language_code}' subtitles stream already existed in {media_filepath}")
+            #print(f"'{language_code}' subtitles stream already existed in '{media_filepath}'")
             return
 
         else:
@@ -1342,10 +1342,10 @@ def check_file_type(media_filepath, error_messages_callback=None):
 
     if not os.path.isfile(media_filepath):
         if error_messages_callback:
-           error_messages_callback(f"The given file does not exist: {media_filepath}")
+           error_messages_callback(f"The given file does not exist: '{media_filepath}'")
         else:
-            print(f"The given file does not exist: {media_filepath}")
-            raise Exception(f"Invalid file: {media_filepath}")
+            print(f"The given file does not exist: '{media_filepath}'")
+            raise Exception(f"Invalid file: '{media_filepath}'")
     if not ffprobe_check():
         if error_messages_callback:
             error_messages_callback("Cannot find ffprobe executable")
@@ -1438,10 +1438,10 @@ def get_existing_subtitle_language(media_path):
 
     if not os.path.isfile(media_filepath):
         if error_messages_callback:
-           error_messages_callback(f"The given file does not exist: {media_filepath}")
+           error_messages_callback(f"The given file does not exist: '{media_filepath}'")
         else:
-            print(f"The given file does not exist: {media_filepath}")
-            raise Exception(f"Invalid file: {media_filepath}")
+            print(f"The given file does not exist: '{media_filepath}'")
+            raise Exception(f"Invalid file: '{media_filepath}'")
     if not ffprobe_check():
         if error_messages_callback:
             error_messages_callback("Cannot find ffprobe executable")
@@ -1520,6 +1520,7 @@ def main():
     media_filepaths = []
     media_filepath_str = ""
     media_type = None
+    media_format = None
 
     ffmpeg_src_language_code = None
     ffmpeg_dst_language_code = None
@@ -1540,6 +1541,13 @@ def main():
         subtitle_path = args.subtitle_file_path
         language_code = args.language
         output_path = args.output_file_path
+        base, ext = os.path.splitext(output_path)
+        if ext[1:] == "ts":
+            print("Subtitles embedded media file cannot be saved in '.ts' format, will save it in '.mp4' format instead")
+            media_format = "mp4"
+        else:
+            media_format = ext[1:]
+        output_path = f"{base}.{media_format}"
 
         if args.language not in language.name_of_ffmpeg_code.keys():
             print("language code is not supported. Run with --list-languages to see all supported languages.")
@@ -1589,12 +1597,12 @@ def main():
                 media_type = None
 
         if invalid_media_filepaths:
-            msg = "{} is not valid video or audio file".format(invalid_media_filepaths[0])
+            msg = f"'{invalid_media_filepaths[0]}' is not valid video or audio file"
             print(msg)
             sys.exit(0)
 
         if not_exist_media_filepaths:
-            msg = "{} is not exist".format(not_exist_media_filepaths[0])
+            msg = f"'{not_exist_media_filepaths[0]}' is not exist"
             print(msg)
             sys.exit(0)
 
@@ -1647,11 +1655,11 @@ def main():
                 not_exist_subtitle_paths.append(subtitle_paths[0])
 
         if invalid_subtitle_paths:
-            msg = "{} is not a valid SRT subtitle file".format(invalid_subtitle_paths[0])
+            msg = f"'{invalid_subtitle_paths[0]}' is not a valid SRT subtitle file"
             print(msg)
 
         if not_exist_subtitle_paths:
-            msg = "{} is not exist".format(not_exist_subtitle_paths[0])
+            msg = f"'{not_exist_subtitle_paths[0]}' is not exist"
             print(msg)
 
         if not valid_subtitle_paths and not not_exist_subtitle_paths:
@@ -1660,7 +1668,8 @@ def main():
         if media_filepaths and valid_subtitle_paths and output_path:
             base, ext = os.path.splitext(media_filepaths[0])
             ffmpeg_src_language_code = args.language
-            print("Checking %s" %media_filepaths[0])
+
+            print(f"Checking '{media_filepaths[0]}'")
 
             subtitle_stream_parser = SubtitleStreamParser(error_messages_callback=show_error_messages)
             subtitle_streams_data = subtitle_stream_parser(media_filepaths[0])
@@ -1683,7 +1692,7 @@ def main():
                     pbar.finish()
 
         if result and os.path.isfile(result):
-            print("Subtitles embedded {} created at : {}".format(media_type, output_path))
+            print(f"Subtitles embedded {media_type} created at : '{output_path}'")
 
     else:
         parser.print_help()
