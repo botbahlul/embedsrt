@@ -2,7 +2,7 @@
 
 folder1="./build"
 folder2="./dist"
-folder3="./vosk_autosrt.egg-info"
+folder3="./embedsrt.egg-info"
 
 if [ -d "$folder1" ]; then
 	rm -rf "$folder1"
