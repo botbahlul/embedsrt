@@ -3,7 +3,7 @@ setlocal
 
 set "folderToDelete1=.\build"
 set "folderToDelete2=.\dist"
-set "folderToDelete3=.\vosk_autosrt.egg-info"
+set "folderToDelete3=.\embedsrt.egg-info"
 
 if exist "%folderToDelete1%" (
     rmdir /s /q "%folderToDelete1%"
